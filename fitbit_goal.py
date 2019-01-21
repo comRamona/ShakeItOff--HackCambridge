@@ -5,6 +5,7 @@ import json
 from urllib.parse import urlencode, quote_plus
 from urllib.request import Request
 import requests
+import os
 #These are the secrets etc from Fitbit developer
 
 def calories_to_steps(calorie_value):
@@ -13,14 +14,14 @@ def calories_to_steps(calorie_value):
 def set_goal(calorie_goal):
     calorie_goal = round(calorie_goal)
     step_goal = calories_to_steps(calorie_goal)
-    OAuthTwoClientID = "22D9TV"
-    ClientOrConsumerSecret = "03ffeee9e0e9685a5fb918905140770b"
+    OAuthTwoClientID = os.environ("FITBIT_OAUTH")
+    ClientOrConsumerSecret = os.environ["FITBIT_SECRET")
 
     #This is the Fitbit URL
     #TokenURL = "https://www.fitbit.com/oauth2/authorize"
     TokenURL = "https://api.fitbit.com/oauth2/token"
     #I got this from the first verifier part when authorising my application
-    AuthorisationCode = "afee571043e48faffc9affdc75bf3b329f9980ec"
+    AuthorisationCode = os.environ["FITBIT_CODE")
 
     access_token = os.environ['FITBIT_TOKEN']
     headers = {'Authorisation': 'Bearer ' + access_token}

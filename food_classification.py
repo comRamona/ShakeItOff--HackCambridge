@@ -2,19 +2,17 @@ import requests
 import csv
 import urllib
 import json
-
+import os
 from io import BytesIO
-
-# Replace <Subscription Key> with your valid subscription key.
-subscription_key = os.environ['OCR_KEY']
-assert subscription_key
-vision_base_url = "https://uksouth.api.cognitive.microsoft.com/vision/v1.0/"
-ocr_url = vision_base_url + "ocr"
-
-image_url = "https://res.cloudinary.com/di1eacmti/image/upload/v1547978783/sg1wsizd72p2llcqj0pw.jpg"
+import requests
+import json
 
 def send_request(image_url):
 # Set image_url to the URL of an ima.ge that you want to analyze
+    subscription_key = os.environ['OCR_KEY']
+    assert subscription_key
+    vision_base_url = "https://uksouth.api.cognitive.microsoft.com/vision/v1.0/"
+    ocr_url = vision_base_url + "ocr"
     headers = {'Ocp-Apim-Subscription-Key': subscription_key}
     params  = {'language': 'unk', 'detectOrientation': 'true'}
     data    = {'url': image_url}
@@ -63,9 +61,6 @@ def clean_info(word_infos):
     url = 'https://ussouthcentral.services.azureml.net/workspaces/387a031cf5974c38b75d4c1d23282804/services/a27a1c5b1a574aa1b96c97630f79f133/execute?api-version=2.0&details=true'
     api_key = os.environ["AZURE_API_KEY_CLEAN"]
     headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key)}
-
-    #req = urllib2.Request(url, body, headers) 
-
     try:
         #response = urllib2.urlopen(req)
 
@@ -74,13 +69,9 @@ def clean_info(word_infos):
         response = urllib.request.urlopen(req)
 
         result = response.read()
-        #print(result) 
         return result
     except Exception as error:
         print("The request failed with status code: ")
-
-        # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
-        #print(error)
         return error
 
 def classify_food(clean_data):
@@ -104,7 +95,6 @@ def classify_food(clean_data):
     }
     }
 
-    print("DATAAAA")
     body = str.encode(json.dumps(data))
     print(data)
 
@@ -112,27 +102,18 @@ def classify_food(clean_data):
     api_key =  os.environ["AZURE_API_KEY_CLASSIFY"]
     headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key)}
 
-    #req = urllib2.Request(url, body, headers) 
-
     try:
-        #response = urllib2.urlopen(req)
-
+        # response = urllib2.urlopen(req)
         # If you are using Python 3+, replace urllib2 with urllib.request in the above code:
         req = urllib.request.Request(url, body, headers) 
         print(req.data)
         response = urllib.request.urlopen(req)
 
         result = response.read()
-        #print(result) 
-        #print('printed result')
         return result
     except urllib.error.HTTPError as error:
         print("The request failed with status code: ")
-        #print(stuff)
         print(error.read())
-
-        # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
-        #print(error)
         return error
 
 def match_classification(clean_data, classification):
@@ -176,55 +157,6 @@ def compute_calories(items):
         'items': final_res,
     }
 
-import requests
-#import csv
-# If you are using a Jupyter notebook, uncomment the following line.
-#%matplotlib inline
-from io import BytesIO
-
-# Replace <Subscription Key> with your valid subscription key.
-subscription_key = "4f8037e3d71544d6ab82136f3121e1c5"
-assert subscription_key
-vision_base_url = "https://uksouth.api.cognitive.microsoft.com/vision/v1.0/"
-ocr_url = vision_base_url + "ocr"
-image_url = "https://res.cloudinary.com/di1eacmti/image/upload/v1547978783/sg1wsizd72p2llcqj0pw.jpg"
-
-def send_request(image_url):
-# Set image_url to the URL of an ima.ge that you want to analyze
-    
-
-    headers = {'Ocp-Apim-Subscription-Key': subscription_key}
-    params  = {'language': 'unk', 'detectOrientation': 'true'}
-    data    = {'url': image_url}
-    response = requests.post(ocr_url, headers=headers, params=params, json=data)
-    response.raise_for_status()
-
-    analysis = response.json()
-
-    return analysis
-
-
-def parse_result(analysis):
-    line_infos = [region["lines"] for region in analysis["regions"]]
-    word_infos = []
-    for line in line_infos:
-        for word_metadata in line:
-            item = ""
-            for word_info in word_metadata["words"]:
-                item = item + word_info['text']
-                item = item + " "
-            word_infos.append(item)
-
-    #with open('items.csv', 'w', newline='') as csvfile:
-    #    writer = csv.writer(csvfile, delimiter=',')
-    for item in word_infos:
-        #writer.writerow([item])
-        print(item)
-    return word_infos
-
-import requests
-import json
-
 def get_calories_per_item(item_name="waffle"):
     if item_name in ["welcome","thank you","balance"]:
         return -1, item_name
@@ -258,17 +190,11 @@ def get_calories_per_item(item_name="waffle"):
 
 
 def main():
+    image_url = "https://res.cloudinary.com/di1eacmti/image/upload/v1547978783/sg1wsizd72p2llcqj0pw.jpg"
     analysis = send_request(image_url)
     items = clean_info(parse_result(analysis))
-    #print("items********:"+str(items))
     results = classify_food(items)
-    #print(results)
     foods = match_classification(items, results)
-    #print(foods)
-    #print("results********:"+str(results))
-    #foods = match_classification(items, results)
-    #items = itemize_list(res)
-    #print(items)
     print(compute_calories(foods[:4]))
 
 if __name__ == '__main__':
