@@ -14,7 +14,7 @@ Flask-WTF==0.14.2
 idna==2.8
 itsdangerous==1.1.0
 jaraco.functools==2.0
-Jinja2==2.10
+Jinja2==2.11.3
 MarkupSafe==1.1.0
 mock==2.0.0
 more-itertools==5.0.0
